@@ -1,0 +1,56 @@
+CREATE  TABLE tema
+(cod_tema VARCHAR2(10)NOT NULL,
+denominacion VARCHAR2(14),
+cod_tema_padre VARCHAR2(10),
+CONSTRAINT PK_TEMA PRIMARY KEY (cod_tema),
+CONSTRAINT FK_TEMA FOREIGN KEY (cod_tema_padre) REFERENCES tema(cod_tema),
+CONSTRAINT restriccion_cod_tema CHECK (cod_tema<=cod_tema_padre)
+);
+
+CREATE TABLE Autor
+(cod_autor VARCHAR2(10)NOT NULL,
+nombre VARCHAR2(14),
+f_nacimiento DATE,
+libro_principal VARCHAR2(20),
+CONSTRAINT PK_Autor PRIMARY KEY (cod_autor)
+);
+ALTER TABLE Autor ADD CONSTRAINT FK_AUTOR FOREIGN KEY (libro_principal) REFERENCES LIBRO(cod_libro)
+
+CREATE TABLE Libro
+(cod_libro VARCHAR2(10)NOT NULL,
+titulo VARCHAR2(10),
+cod_tema VARCHAR2(10),
+autor_principal VARCHAR2(10)NOT NULL,
+CONSTRAINT PK_Libro PRIMARY KEY (cod_libro),
+CONSTRAINT FK_Libro FOREIGN KEY (cod_tema) REFERENCES TEMA(cod_tema),
+CONSTRAINT FK_Libro_2 FOREIGN KEY (autor_principal) REFERENCES AUTOR(cod_autor)
+);
+
+CREATE TABLE LIBRO_AUTOR
+(cod_libro VARCHAR2(10)NOT NULL,
+cod_autor VARCHAR2(10)NOT NULL,
+orden VARCHAR2(10),
+CONSTRAINT PK_LIBRO_AUTOR PRIMARY KEY (cod_libro,cod_autor),
+CONSTRAINT FK_LIBRO_AUTOR FOREIGN KEY (cod_libro) REFERENCES LIBRO(cod_libro),
+CONSTRAINT FK_LIBRO_AUTOR_2 FOREIGN KEY (cod_autor) REFERENCES AUTOR(cod_autor),
+CONSTRAINT retris_orden CHECK (1<=orden),
+CONSTRAINT retris_orden_2 CHECK (5>=orden)
+);
+
+CREATE TABLE EDITORIAL
+(cod_editorial VARCHAR2(14)NOT NULL,
+denominacion VARCHAR2(10),
+CONSTRAINT PK_EDITORIAL PRIMARY KEY (cod_editorial)
+
+);
+
+CREATE TABLE PUBLICACIONES
+(cod_editorial VARCHAR2(14)NOT NULL,
+cod_libro VARCHAR2(10)NOT NULL,
+precio NUMBER(10),
+f_publicacion VARCHAR2(20),
+CONSTRAINT PK_PUBLICACIONES PRIMARY KEY (cod_editorial,cod_libro),
+CONSTRAINT FK_PUBLICACIONES FOREIGN KEY (cod_editorial) REFERENCES EDITORIAL(cod_editorial) ON DELETE  CASCADE,
+CONSTRAINT FK_PUBLICACIONES_2 FOREIGN KEY (cod_libro) REFERENCES LIBRO(cod_libro) ON DELETE CASCADE
+)
+

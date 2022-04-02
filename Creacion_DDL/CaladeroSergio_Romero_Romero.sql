@@ -1,0 +1,68 @@
+CREATE TABLE BARCOS(
+matricula VARCHAR2(7),
+nombre VARCHAR2(20),
+armador VARCHAR2(20),
+capacidad NUMBER(10),
+nacionalidad VARCHAR2(25),
+CONSTRAINT PK_BARCOS PRIMARY KEY (matricula)
+);
+
+ALTER TABLE BARCOS ADD CONSTRAINT ch_matricula CHECK (regexp_like(matricula,'^[A-Z]{2}[-]{1}[0-9]{4}'));
+ALTER TABLE BARCOS DROP COLUMN armador; 
+
+CREATE TABLE LOTES(
+codigo VARCHAR2(10),
+matricula VARCHAR2(7),
+numkilos NUMBER(10),
+precioporkilosalida NUMBER(5,2),
+precioporkiloadjudicado NUMBER(6,2),
+fechaventa DATE,
+cod_especie VARCHAR2(10),
+CONSTRAINT PK_LOTES	PRIMARY KEY (codigo),
+CONSTRAINT FK1_LOTES FOREIGN KEY (matricula) REFERENCES barcos(matricula) ON DELETE CASCADE
+);
+
+ALTER TABLE LOTES MODIFY fechaventa DATE NOT NULL;
+ALTER TABLE LOTES ADD CONSTRAINT CH_PRECIOMAYOR CHECK (precioporkiloadjudicado > precioporkilosalida);
+ALTER TABLE LOTES ADD CONSTRAINT CH_PRECIO CHECK (numkilos > 0 AND precioporkiloadjudicado > 0 AND precioporkilosalida > 0);
+
+
+CREATE TABLE ESPECIE(
+codigo VARCHAR2(10),
+nombre VARCHAR2(20),
+tipo VARCHAR2(15),
+cupoporbarco NUMBER(10),
+caladero_principal VARCHAR2(10),
+
+CONSTRAINT PK_ESPECIE PRIMARY KEY (codigo)
+);
+
+ALTER TABLE LOTES ADD CONSTRAINT FK2_LOTES FOREIGN KEY (cod_especie) REFERENCES ESPECIE(codigo) ON DELETE CASCADE;
+
+
+CREATE TABLE CALADERO(
+codigo VARCHAR2(10),
+nombre VARCHAR2(20),
+ubicacion VARCHAR2(50),
+especie_principal VARCHAR2(10),
+
+CONSTRAINT PK_CALADERO PRIMARY KEY (codigo),
+CONSTRAINT FK_CALADERO FOREIGN KEY (especie_principal) REFERENCES ESPECIE(codigo) ON DELETE SET NULL
+);
+
+ALTER TABLE especie ADD CONSTRAINT fk1_especie FOREIGN KEY (caladero_principal) REFERENCES CALADERO(codigo);
+ALTER TABLE caladero ADD CONSTRAINT ch_mayusculas CHECK (UPPER(nombre)=nombre AND UPPER(ubicacion)=ubicacion);
+ALTER TABLE CALADERO ADD nombre_cientifico VARCHAR2(70);
+
+CREATE TABLE FECHAS_CAPTURAS_PERMITIDAS(
+cod_especie VARCHAR2(10),
+cod_caladero VARCHAR2(10),
+fecha_inicial DATE,
+fecha_final DATE,
+
+CONSTRAINT PK_FECHAS_CAPTURAS_PERMITIDAS PRIMARY KEY (cod_especie,cod_caladero),
+CONSTRAINT FK1_FECHAS_CAPTURAS_PERMITIDAS FOREIGN KEY (cod_especie) REFERENCES ESPECIE(codigo),
+CONSTRAINT FK2_FECHAS_CAPTURAS_PERMITIDAS FOREIGN KEY (cod_caladero) REFERENCES CALADERO(codigo)
+);
+ALTER TABLE FECHAS_CAPTURAS_PERMITIDAS ADD CONSTRAINT condicion1_fechas CHECK (TO_CHAR(fecha_inicial,'DD/MM') < '02/02' OR TO_CHAR(fecha_inicial,'DD/MM') > '28/03');
+ALTER TABLE FECHAS_CAPTURAS_PERMITIDAS ADD CONSTRAINT condicion2_fechas CHECK (TO_CHAR(fecha_final,'DD/MM') < '02/02' OR TO_CHAR(fecha_final,'DD/MM') > '28/03');
